@@ -1,0 +1,46 @@
+/**
+ * CSV - WRITER
+ * CSV 파일 쓰기
+ */
+import { NextResponse } from "next/server";
+import { createObjectCsvWriter } from "csv-writer";
+import { join } from 'path';
+
+export async function GET() {
+    try {
+        // 원시데이터 하드코딩
+        const products = [
+            { name: "무선 마우스", price: 29900, category: "전자제품", rating: 4.5},
+            { name: "기계식 키보드", price: 89000, category: "전자제품", rating: 4.8},
+            { name: "게이밍 모니터", price: 250000, category: "전자제품", rating: 4.7},
+            { name: "무선 이어폰", price: 12000, category: "전자제품", rating: 4.3}
+        ];
+        // 파일 저장 경로
+        const filePath = join(process.cwd(), "products.csv");
+
+        // csv 저장 정보 설정
+        const csvWriter = createObjectCsvWriter({
+            path: filePath,
+            header: [
+                { id: 'name', title: '상품명' },
+                { id: 'price', title: '가격' },
+                { id: 'category', title: '카테고리' },
+                { id: 'rating', title: '평점' }
+            ],
+            encoding: 'utf8'
+        });
+        await csvWriter.writeRecords(products);
+        return NextResponse.json({
+            success: true,
+            message: 'CSV 파일 저장 완료!',
+            filePath: filePath,
+            recordCount: products.length
+        });
+    } catch (error) {
+        console.error(' CSV 저장 오류 : ', error);
+        return NextResponse.json(
+            { success: false, error: 'CSV 저장 오류' },
+            { status: 500 }
+        );
+    }
+}
