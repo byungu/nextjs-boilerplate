@@ -92,7 +92,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 <div className="text-center">
                     <p className="text-xl text-gray-600">상품을 찾을 수 없습니다.</p>
                     <Link href="/products" className="mt-4 inline-block text-blue-600 hover:text-blue-700">
-                    목록으로 돌아가기
+                    목록으로 돌아가기 11
                     </Link>
                 </div>
             </div>
