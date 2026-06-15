@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "api/supabase/complete?apiKey=hRQbYbXEpnaOSSaE9ITm7bG1QN7Or7Bn",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

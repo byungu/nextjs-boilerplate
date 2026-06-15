@@ -13,7 +13,7 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `app/pagepage.tsx`. The page auto-updates as you edit the file.
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
@@ -44,3 +44,7 @@ npm install supabase/supabase-js -> 인스톨 명령
 - 빠른검색과 실시간 분석 특화
 - 
 ## lib 폴더는 모듈화 기본 폴더
+
+## recharts -> react에 최적화된 간단하고 직관적인 차트 라이브러리
+npm install recharts -> 인스톨
+
