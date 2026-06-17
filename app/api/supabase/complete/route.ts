@@ -8,6 +8,7 @@ import { fetchProductData } from "@/lib/scraping-utils";
 import { cleanProductData, validateProduct, removeDuplicates } from "@/lib/data-utils";
 import { saveProducts } from '@/lib/database-utils';
 import { Product } from '@/lib/types/product';
+export const dynamic = 'force-dynamic'; // 👈 이 줄을 최상단에 추가하세요!
 
 /**
  * 스크래핑 및 데이터베이스 저장 함수 구현
