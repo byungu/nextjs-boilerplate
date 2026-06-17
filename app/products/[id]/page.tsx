@@ -4,9 +4,7 @@ import PriceChart from "@/app/components/PriceChart";
 import supabase from "@/lib/supabase";
 
 interface Props {
-    params: {
-        id: string; // params.id는 이제 product_id입니다 (3.5.3에서 변경됨)
-    };
+    params: Promise<{ id: string }>;
 }
 
 // 상품 정보를 가져오는 함수
@@ -83,7 +81,7 @@ async function getPriceHistory(productId: string) {
 export default async function ProductDetailPage({ params }: Props) {
     // await로 상품 정보 가져오기
     // params.id는 이제 product_id입니다
-    const product = await getProduct(params.id);
+    const product = await getProduct((await params).id);
 
     // 상품 정보가 없으면 에러 페이지 표시
     if (!product) {
@@ -101,7 +99,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
     // 상품 정보를 가져온 후 product_id로 히스토리 조회
     // params.id가 이미 product_id이므로 직접 사용
-    const history = await getPriceHistory(params.id);
+    const history = await getPriceHistory((await params).id);
 
     return (
         <div className="min-h-screen bg-gray-50">
