@@ -3,6 +3,7 @@ import { fetchProductData } from "@/lib/scraping-utils";
 import {cleanProductData, validateProduct, removeDuplicates } from "@/lib/data-utils";
 import { saveProductsToElasticsearch } from "@/lib/elasticsearch-utils";
 import { Product } from "@/lib/types/product";
+export const dynamic = 'force-dynamic';
 
 export async function GET( request: Request ) {
     try {
