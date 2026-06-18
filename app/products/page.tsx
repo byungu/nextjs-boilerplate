@@ -1,51 +1,58 @@
+// 서버 컴포넌트: URL 파라미터에서 검색어를 읽어서 데이터 가져오기
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
-import ProductCard from '@/app/components/styled/products/ProductCard';
-import supabase from "@/lib/supabase";
+import ProductList from '@/app/components/ProductList'; // 클라이언트 컴포넌트
+import supabase from '@/lib/supabase';
 
-async function getProducts() {
+// 상품 타입 정의
+type Product = {
+    id: string;
+    name: string;
+    price: number;
+    category: string;
+};
+
+// Supabase에서 상품 목록을 가져오는 함수
+// query: 검색어 (있으면 필터링, 없으면 전체)
+async function getProducts(query?: string): Promise<Product[]> {
     try {
         // Supabase 쿼리 실행
-        // from('products'): products 테이블 선택
-        // select(): 필요한 칼럼만 선택하여 네트워크 비용 절약
-        // product_id: 상품 고유 ID ( 그룹화 기준이자 상세 페이지 링크용 )
-        // collected_at: 수집 시간 ( 최신 레코드 판별용 )
-        // order(): collected_at 기준 내립차순 정렬(최신 데이터가 먼저)
+        let supabaseQuery = supabase
+            .from('products')
+            .select(` 
+        product_id, 
+        name, 
+        price, 
+        category, 
+        collected_at 
+      `)
+            .order('collected_at', { ascending: false });
 
-        const {data, error} = await supabase
-            .from("products")
-            .select(`
-            product_id,
-            name,
-            price,
-            category,
-            collected_at
-            `)
-            .order('collected_at', {ascending: false});
+        // 검색어가 있으면 필터링
+        // ilike: 대소문자 구분 없이 부분 일치 검색
+        if (query?.trim()) {
+            supabaseQuery = supabaseQuery.ilike('name', `%${query}%`);
+        }
+
+        const { data, error } = await supabaseQuery;
 
         if (error) {
             throw new Error(`Supabase 쿼리 실패: ${error.message}`);
         }
 
         if (!data) {
-            return []
+            return [];
         }
 
         // product_id별로 그룹화하여 각 상품의 최신 레코드만 선택
-        // Map을 사용하여 각 product_id별로 첫 번째(최신) 레코드만 유지
-        // collected_at 기준으로 이미 내림차순 정렬되어 있으므로, 첫 번째 레코드가 최신
         const productMap = new Map<string, typeof data[0]>();
         data.forEach(item => {
-            // 이미 해당 product_id의 레코드가 없으면 추가(최신 레코드만 유지)
-            // 정렬 순서상 첫 번째로 만나는 product_id가 항상 최신이므로 추가만 하면 됨
             if (!productMap.has(item.product_id)) {
                 productMap.set(item.product_id, item);
             }
         });
 
-        // Map의 값들을 배열로 변환하고 프론트엔드 구조로 변환
-        // id: product_id를 그대로 사용 (상세 페이지에서도 product_id 사용)
-        // DECIMAL 타입의 price를 number로 변환
+        // 프론트엔드 구조로 변환
         return Array.from(productMap.values()).map(item => ({
             id: item.product_id,
             name: item.name,
@@ -54,20 +61,22 @@ async function getProducts() {
         }));
 
     } catch (error) {
-        // 에러 발생 시 콘솔에 로그 출력
-        // product_id를 id로 사용
-        // DECIMAL → number 변환
-        // 프로덕션에서는 에러 로깅 서비스에 전송하는 것이 좋습니다
-        console.error('상품 목록 가져오기 실패:', error);
-        // 빈 배열을 반환하여 앱이 계속 작동하도록 합니다
+        console.error('상품 목록 가져오기 실패 :', error);
         return [];
     }
 }
 
 // 서버 컴포넌트: async 함수로 선언하여 데이터를 가져옵니다
-export default async function ProductsPage() {
-    // await로 데이터 가져오기
-    const products = await getProducts();
+// searchParams: URL 파라미터를 받는 props
+export default async function ProductsPage({searchParams}: { searchParams: Promise<{ q?: string }>; }) {
+    // URL 파라미터에서 검색어 가져오기
+    // 💡 사용하기 전에 반드시 await을 해주어야 합니다.
+    const resolvedSearchParams = await searchParams;
+    // 예: /products?q=노트북
+    const query = resolvedSearchParams.q || '';
+
+    // 검색어에 따라 필터링된 상품 목록 가져오기
+    const products = await getProducts(query);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -81,26 +90,17 @@ export default async function ProductsPage() {
                 {products.length === 0 ? (
                     <div className="text-center py-12">
                         <p className="text-gray-600 text-lg">
-                            등록된 상품이 없습니다.
+                            {query ? `"${query}"에 대한 검색 결과가 없습니다.` : '등록된 상품이 없습니다.'}
                         </p>
-                        <p className="text-gray-500 text-sm mt-2">
-                            Supabase 대시보드에서 데이터를 추가하세요.
-                        </p>
+                        {!query && (
+                            <p className="text-gray-500 text-sm mt-2">
+                                Supabase 대시보드에서 데이터를 추가하세요.
+                            </p>
+                        )}
                     </div>
                 ) : (
-                    <>
-                        <p className="text-gray-600 mb-8">
-                            총 {products.length}개의 상품
-                        </p>
-                        {/* Grid 레이아웃: 모바일 1열, 태블릿 2열, 데스크톱 3열 */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                            {/* map 함수로 products 배열을 반복하여 ProductCard를 렌더링합니다 */}
-                            {/* key는 product_id를 사용 (상세 페이지에서도 product_id 사용) */}
-                            {products.map(product => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
-                        </div>
-                    </>
+                    // 클라이언트 컴포넌트에 필터링된 상품 목록 전달
+                    <ProductList products={products} searchQuery={query} />
                 )}
             </main>
             <Footer />
