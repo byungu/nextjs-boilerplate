@@ -20,6 +20,7 @@ type Props = {
 export default function ProductList({ products, searchQuery: initialQuery }: Props) {
     // useState: 검색어 상태 (입력창용)
     // [상태값, 상태를 변경하는 함수] = useState(초기값)
+    // initialQuery는
     const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
     // useRouter: URL을 업데이트하기 위한 훅
     const router = useRouter();
