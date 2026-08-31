@@ -48,3 +48,7 @@ npm install supabase/supabase-js -> 인스톨 명령
 ## recharts -> react에 최적화된 간단하고 직관적인 차트 라이브러리
 npm install recharts -> 인스톨
 
+## 데이터의 흐름 시작
+- app/products/page.tsx -> 로 웹이 시작됨
+- getProducts() 함수로 데이터 베이스와 연결하여 데이터를 가져옴
+- 
